@@ -3,6 +3,7 @@ use std::thread;
 use std::fs;
 use std::rc::Rc;
 use std::process::Command;
+use std::env;
 use std::path::Path;
 
 use rfd::FileDialog;
@@ -49,11 +50,17 @@ struct VideoFile {
 }
 
 fn main() {
+    let files = Rc::new(VecModel::from(vec![]));
+    for i in 1..env::args().count() {
+        files.push(StandardListViewItem { text: env::args().nth(i).unwrap().into() });
+    }
+
     let ui = AppWindow::new();
     let model = Rc::new(VecModel::from(vec![]));
     let config: Config = confy::load_path(CONFIG_FILE.clone()).unwrap_or(Config::default());
 
     // set slint widgets values
+    ui.set_filesModel(files.clone().into()); 
     ui.set_rowsCount(slint::SharedString::from(config.rows_count.to_string()));
     ui.set_columnsCount(slint::SharedString::from(config.columns_count.to_string()));
     ui.set_spacing(slint::SharedString::from(config.spacing.to_string()));
@@ -98,6 +105,8 @@ fn main() {
         let ui = ui_handle.unwrap();
         let model = ui.get_filesModel().clone();
         let mut handles = Vec::new();
+        println!("{:#?}", model.row_count());
+        use rayon::prelude::*;
         for item in model.iter() {
             let path: String = item.text.into();
             let duration: f32 = get_video_duration(&path);
@@ -183,21 +192,15 @@ fn create_thumbnails(file: &VideoFile) {
     
     let cache_dir = proj_dirs.cache_dir().display();
     let thumb_prefix = String::from(Path::new(&file.path).file_name().unwrap().to_str().unwrap());
-    let mut handles = Vec::new();
-    for i in 0..total_thumbs {
+    use rayon::prelude::*;
+    (0..total_thumbs).into_par_iter().for_each(|i| {
         let output_path: String = format!("{cache_dir}/{thumb_prefix}-thumb-{i}.png");
         let time_position: f32 = start_time * i as f32;
         let file = file.clone();
         let p = String::from(&file.path);
-        fs::remove_file(output_path.clone());
-        let h = thread::spawn( move || {
-            create_thumbnail(p, String::from(&output_path), time_position);
-        });
-        handles.push(h);
-    }
-    while let Some(h) = handles.pop() {
-        h.join().unwrap();
-    }
+        create_thumbnail(p, output_path, time_position);
+    });
+
 
     let mut index: u32 = 0;
     let w: u32 = (columns * thumb_width ) + (spacing * columns + spacing);
@@ -209,7 +212,7 @@ fn create_thumbnails(file: &VideoFile) {
             let top: u32 = (i * thumb_height) + ((i + 1) * spacing);
             let thumb_path: String = format!("{cache_dir}/{thumb_prefix}-thumb-{index}.png");
             let thumb_image = image::open(thumb_path.clone()).unwrap();
-            let subimg: DynamicImage = thumb_image.resize(thumb_width, thumb_height, FilterType::Nearest);
+            let subimg: DynamicImage = thumb_image.resize(thumb_width, thumb_height, FilterType::Triangle);
             println!("copied row {} column {}", i, j);
             image.copy_from(&subimg.into_rgb8(), left, top).expect("poop");
             fs::remove_file(thumb_path).unwrap();

@@ -1737,6 +1737,7 @@ dependencies = [
  "directories",
  "image",
  "lazy_static",
+ "rayon",
  "rfd",
  "serde",
  "slint",
