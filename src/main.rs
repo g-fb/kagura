@@ -3,6 +3,7 @@ use std::thread;
 use std::fs;
 use std::rc::Rc;
 use std::process::Command;
+use std::path::Path;
 
 use rfd::FileDialog;
 use directories::{ProjectDirs};
@@ -96,16 +97,21 @@ fn main() {
     ui.on_run(move || {
         let ui = ui_handle.unwrap();
         let model = ui.get_filesModel().clone();
+        let mut handles = Vec::new();
         for item in model.iter() {
             let path: String = item.text.into();
             let duration: f32 = get_video_duration(&path);
             let width: u32 = get_video_width(&path);
             let height: u32 = get_video_height(&path);
 
-            thread::spawn(move || {
+            let h = thread::spawn( move || {
                 create_thumbnails(&VideoFile {path, width, height, duration});
             });
+            handles.push(h);
         };
+        while let Some(h) = handles.pop() {
+            h.join().unwrap();
+        }
     });
 
     ui.run();
@@ -176,15 +182,22 @@ fn create_thumbnails(file: &VideoFile) {
     fs::create_dir_all(cache_dir);
     
     let cache_dir = proj_dirs.cache_dir().display();
+    let thumb_prefix = String::from(Path::new(&file.path).file_name().unwrap().to_str().unwrap());
+    let mut handles = Vec::new();
     for i in 0..total_thumbs {
-        let output_path: String = format!("{cache_dir}/thumb-{i}.png");
+        let output_path: String = format!("{cache_dir}/{thumb_prefix}-thumb-{i}.png");
         let time_position: f32 = start_time * i as f32;
         let file = file.clone();
         let p = String::from(&file.path);
         fs::remove_file(output_path.clone());
-        create_thumbnail(p, &output_path, time_position);
+        let h = thread::spawn( move || {
+            create_thumbnail(p, String::from(&output_path), time_position);
+        });
+        handles.push(h);
     }
-
+    while let Some(h) = handles.pop() {
+        h.join().unwrap();
+    }
 
     let mut index: u32 = 0;
     let w: u32 = (columns * thumb_width ) + (spacing * columns + spacing);
@@ -194,7 +207,7 @@ fn create_thumbnails(file: &VideoFile) {
         for j in 0..columns {
             let left: u32 = (j * thumb_width)  + ((j + 1) * spacing);
             let top: u32 = (i * thumb_height) + ((i + 1) * spacing);
-            let thumb_path: String = format!("{cache_dir}/thumb-{index}.png");
+            let thumb_path: String = format!("{cache_dir}/{thumb_prefix}-thumb-{index}.png");
             let thumb_image = image::open(thumb_path.clone()).unwrap();
             let subimg: DynamicImage = thumb_image.resize(thumb_width, thumb_height, FilterType::Nearest);
             println!("copied row {} column {}", i, j);
@@ -208,7 +221,7 @@ fn create_thumbnails(file: &VideoFile) {
 
 }
 
-fn create_thumbnail(path: String, output_path: &String, time_position: f32) {
+fn create_thumbnail(path: String, output_path: String, time_position: f32) {
 
     use std::process::{Stdio};
     let command = format!("ffmpeg -ss {time_position} -i \"{path}\" -frames:v 1 -qscale:v 3 \"{output_path}\"");
@@ -220,5 +233,5 @@ fn create_thumbnail(path: String, output_path: &String, time_position: f32) {
         .expect("failed to execute process");
 
     child.wait_with_output().expect("");
-
+    
 }
