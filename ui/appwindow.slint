@@ -1,0 +1,98 @@
+import { Button, StandardListView, LineEdit } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    preferred-width: 600px;
+    preferred-height: 400px;
+
+    in-out property <string> rowsCount;
+    in-out property <string> columnsCount;
+    in-out property <string> spacing;
+    in-out property <string> thumbWidth;
+    in property <[StandardListViewItem]> filesModel;
+    
+    callback run();
+    callback open_file_dialog();
+    callback save_config();
+
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            StandardListView {
+                model: root.filesModel;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 10px;
+
+            Button {
+                text: "Select files";
+                clicked => { 
+                    root.open_file_dialog();
+                }
+            }
+
+            Button {
+                text: "Run";
+                clicked => { 
+                    root.run();
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 10px;
+
+            VerticalLayout {
+                Text {
+                    text: "Rows";
+                }
+                rowsCount := LineEdit {
+                    text <=> root.rowsCount;
+                    edited => {
+                        // root.rowsCount = self.text;
+                        save_config();
+                    }
+                }
+            }
+            VerticalLayout {
+                Text {
+                    text: "Columns";
+                }
+                columnsCount := LineEdit {
+                    text <=> root.columnsCount;
+                    edited => {
+                        // root.columnsCount = self.text;
+                        save_config();
+                    }
+                }
+            }
+            VerticalLayout {
+                Text {
+                    text: "Spacing";
+                }
+                spacing := LineEdit {
+                    text: root.spacing;
+                    edited => {
+                        root.spacing = self.text;
+                        save_config();
+                    }
+                }
+            }
+            VerticalLayout {
+                Text {
+                    text: "Thumbnail width";
+                }
+                thumbWidth := LineEdit {
+                    text: root.thumbWidth;
+                    edited => {
+                        root.thumbWidth = self.text;
+                        save_config();
+                    }
+                }
+            }
+        }
+     }
+}

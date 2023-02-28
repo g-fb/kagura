@@ -1,0 +1,20 @@
+[package]
+name = "kagura"
+version = "0.1.0"
+authors = ["George Florea Bănuș <georgefb899@gmail.com>"]
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+slint = "0.3.4"
+rfd = { version = "0.11.1", default-features = false, features = ["xdg-portal"] }
+image = "0.24.5"
+lazy_static = "1.4.0"
+directories = "4.0.1"
+serde = { version = "1.0.152", features = ["derive"] }
+confy = "0.5.1"
+
+[build-dependencies]
+slint-build = "0.3.4"
