@@ -36,7 +36,7 @@ impl ::std::default::Default for Config {
 
 lazy_static! {
     static ref CONFIG_FILE: String = {
-        let proj_dirs = ProjectDirs::from("", "",  "kagura").unwrap();
+        let proj_dirs = ProjectDirs::from("", "",  "kagura").expect("No home dir");
         let config_file = proj_dirs.config_dir().join("kagura.toml");
         config_file.display().to_string()
     };
@@ -50,15 +50,15 @@ struct VideoFile {
 }
 
 fn main() {
-    let files = Rc::new(VecModel::from(vec![]));
-    for i in 1..env::args().count() {
-        files.push(StandardListViewItem { text: env::args().nth(i).unwrap().into() });
-    }
 
     let ui = AppWindow::new();
     let model = Rc::new(VecModel::from(vec![]));
     let config: Config = confy::load_path(CONFIG_FILE.clone()).unwrap_or(Config::default());
 
+    let files = Rc::new(VecModel::from(vec![]));
+    for i in 1..env::args().count() {
+        files.push(StandardListViewItem { text: env::args().nth(i).unwrap().into() });
+    }
     // set slint widgets values
     ui.set_filesModel(files.clone().into()); 
     ui.set_rowsCount(slint::SharedString::from(config.rows_count.to_string()));
@@ -106,7 +106,6 @@ fn main() {
         let model = ui.get_filesModel().clone();
         let mut handles = Vec::new();
         println!("{:#?}", model.row_count());
-        use rayon::prelude::*;
         for item in model.iter() {
             let path: String = item.text.into();
             let duration: f32 = get_video_duration(&path);
@@ -175,21 +174,18 @@ fn create_thumbnails(file: &VideoFile) {
         Err(_e) => Config::default()
     };
 
+    let proj_dirs = ProjectDirs::from("", "",  "kagura").expect("No home dir");
+    fs::create_dir_all(proj_dirs.cache_dir()).expect("Could not create cache folder");
+
     let columns: u32 = config.columns_count;
     let rows: u32 = config.rows_count;
     let thumb_width: u32 = config.thumb_width;
     let spacing: u32 = config.spacing;
-    
     let aspect_ratio: f32 = file.width as f32 / file.height as f32;
     let thumb_height: u32 = (thumb_width as f32 / aspect_ratio) as u32;
-
     let total_thumbs: u32 = rows * columns;
     let start_time: f32 = file.duration / total_thumbs as f32;
 
-    let proj_dirs = ProjectDirs::from("", "",  "kagura").unwrap();
-    let cache_dir = proj_dirs.cache_dir();
-    fs::create_dir_all(cache_dir);
-    
     let cache_dir = proj_dirs.cache_dir().display();
     let thumb_prefix = String::from(Path::new(&file.path).file_name().unwrap().to_str().unwrap());
     use rayon::prelude::*;
