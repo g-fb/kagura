@@ -1,0 +1,18 @@
+<svg width="256" height="256" version="1.1" viewBox="0 0 67.733332 67.733335" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient id="linearGradient3368" x1="1.2627364" x2="66.085651" y1="263.26561" y2="263.26561" gradientTransform="translate(-296.93981,-229.59142)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9c58da" offset="0"/>
+            <stop stop-color="#4c56cd" offset="1"/>
+        </linearGradient>
+        <linearGradient id="linearGradient4563" x1="19.622166" x2="47.726207" y1="263.26561" y2="263.26561" gradientTransform="translate(1.8133091e-6,-1.006426e-5)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#2edee5" stop-opacity=".66826922" offset="0"/>
+            <stop stop-color="#14f5f2" offset=".5"/>
+            <stop stop-color="#c558ff" offset="1"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(0,-229.26665)">
+        <rect transform="rotate(-90)" x="-295.67706" y="1.2627335" width="64.822914" height="64.822906" ry="6.6145768" fill="url(#linearGradient3368)" stroke-width=".316209"/>
+        <rect x="79.747757" y="263.5625" width=".082962379" height=".40914065" ry=".041481189" fill="#cd4b84"/>
+        <text x="15.641179" y="281.32343" fill="#d9f3ff" font-family="Roboto" font-size="50.8px" stroke="url(#linearGradient4563)" stroke-width=".42201" style="mix-blend-mode:normal" xml:space="preserve"><tspan x="15.641179" y="281.32343" fill="#d9f3ff" font-size="50.8px" stroke="url(#linearGradient4563)" stroke-width=".42201">K</tspan></text>
+    </g>
+</svg>
