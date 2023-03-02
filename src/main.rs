@@ -90,13 +90,19 @@ fn main() {
     let ui_handle = ui.as_weak();
     ui.on_open_file_dialog(move || {
         let ui = ui_handle.unwrap();
-        let _file = FileDialog::new()
-            .add_filter("video", &["mkv", "mp4"])
+        let files = FileDialog::new()
+            .add_filter("video", &["mkv", "mp4", "webm", "avi"])
             .set_directory("/")
-            .pick_file();
-        let selected_file = _file.unwrap().into_os_string().into_string().unwrap().into();
+            .pick_files();
+        let selected_files = match files {
+            Some(files) => files,
+            None => return
+        };
+        for selected_file in selected_files {
+            let selected_file = selected_file.into_os_string().into_string().unwrap().into();
+            model.push(StandardListViewItem { text: selected_file });
+        }
 
-        model.push(StandardListViewItem { text: selected_file });
         ui.set_filesModel(model.clone().into()); 
     });
 
