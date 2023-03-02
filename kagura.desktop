@@ -6,10 +6,10 @@
 
 [Desktop Entry]
 Name=Kagura - thumbnailer
-Exec=kagura
+Exec=kagura %U
 Icon=kagura
 Type=Application
 Categories=Qt;KDE;Graphics;Viewer;
-MimeType=video/*;
+MimeType=video/x-matroska;video/mp4;video/webm;video/avi;
 Terminal=false
 StartupWMClass=kagura
